@@ -1,7 +1,3 @@
-def print_row(v,i):
-    row_text = f"Row {i}: " + ", ".join(f"{value:.2f}" for value in v)
-
-
 # calculer la puissance moyenne à partir 
 # des listes de tension et de courant
 
@@ -13,6 +9,27 @@ def compute_power(v_list:list, i_list:list):
     i_rms = (sum_i_squared / len(i_list))**0.5
     power = v_rms * i_rms
     return power
+
+
+#divise la fenetre de puissance en trois regions
+def select_window_region_to_analyse(option:str,window:list)->list:
+
+    if option=='left':
+        w_s=window[1:len(window)//3]
+        return w_s
+    
+    elif option=='middle':
+        w_m=window[(len(window)//2)-2:(len(window)//2)+3:]
+
+        return w_m
+
+    else:
+        w_e=window[len(window)-(len(window)//3)+1:]
+
+        return w_e
+
+
+
 
 # calcule la plus difference  en valeur absolue
 #  des elements d'une liste 
@@ -49,8 +66,8 @@ def is_higher_than_threshold(value:float,thresold:float)->bool:
     return False
 
 # calcule la difference moyenne avant et apres
-# la detection d'un grnad changement au milieu de la fenetre
-def compute_mean_difference(w_s:list,w_e:list)->float:
+# la detection d'un grand changement au milieu de la fenetre
+def compute_mean_window_difference(w_s:list,w_e:list)->float:
     
     w_s_mean=sum(w_s)/len(w_s)
     w_e_mean=sum(w_e)/len(w_e)
@@ -59,9 +76,17 @@ def compute_mean_difference(w_s:list,w_e:list)->float:
     return mean_difference
 
 
+# calcule la difference de puissance correspondant a un evenement candidat
+def compute_candidate_event_mean_difference(s_before,window):
+
+    w_e=window[len(window)-(len(window)//3)+1:]
+    s_after=sum(w_e)//len(w_e)
+    power_variation=abs(s_before-s_after)
+
 # calcule la pente de la 3e region de la fenetre des puissances
 # qui contient les puissances les plus proches
 # pour savoir si la variation est maintenu dans le temps
+
 def calculate_slope(window)->float:
     half_window=window[len(window)//2:]
 
@@ -80,3 +105,22 @@ def calculate_slope(window)->float:
     slope=numerator/denominator
 
     return slope
+
+# verifie si 80% des valeurs de pentes sont inferieur a un seuil
+# permet de detecter le retour a la stabilite du courant
+def detect_steady_state(slopes_list:list,phi:float)->bool:
+
+    steady_slopes=filter(lambda x: abs(x)>=phi,slopes_list)
+
+    expected_steady_slopes_number= round(0.8*len(slopes_list))
+
+    if len(list(steady_slopes))>=expected_steady_slopes_number:
+        
+        print("marche")
+
+        return True
+    
+    print("pas de valeurs")
+    
+    return False
+

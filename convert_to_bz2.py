@@ -23,7 +23,6 @@ I_LIST = []
 # import des modules nécessaires
 import bz2
 import pandas as pd
-from functions import compute_power
 
 for i in range(28,len(DATA_FILES_NAMES_TEMPLATES)):
 

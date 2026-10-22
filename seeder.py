@@ -1,49 +1,20 @@
-# Définition des constantes
-
-DATA_DIR="/media/bere/USB DISK1/BLUED DATASET/location_001_dataset_001-015"
-
-START_INDEX=14
-
-END_INDEX=27
-
-NUMBER_OF_FILES=END_INDEX - START_INDEX + 1
-
-F_S=12000
-
-F_0=50
-
-NUMBER_OF_ROWS_PER_PERIOD=F_S // F_0
-
-DATA_FILES_NAMES_TEMPLATES = [f"{DATA_DIR}/location_001_dataset_001/location_001_ivdata_{i:03d}.txt.bz2" for i in range(START_INDEX, END_INDEX + 1)]
-
-SIDE_TH=25
-
-P_TH=25
-
-MID_TH=20
-
-SLOPE_TH=0.5
-
-ST_TH=1
-
-D_MIN=5000
-
-PHI=0.1
+# import des modules nécessaires
+import csv
+from functions import compute_power
+from window import Window
+from time import sleep
 
 V_LIST = []
 I_LIST = []
 
 
-# import des modules nécessaires
-import csv
-from functions import compute_power
-
-def seed(Event):
+def seed(window:Window,DATA_DIR,F_0,F_S,START_INDEX,NUMBER_OF_FILES,NUMBER_OF_ROWS_PER_PERIOD):
 
     for i in range(NUMBER_OF_FILES):
 
         with open(f"{DATA_DIR}/location_001_dataset_001_csv/location_001_ivdata_{i+START_INDEX:03d}.csv", 'r',newline='') as f:
             data_file=csv.reader(f)
+
             next(data_file)  # skip the header row
 
             for row in data_file:
@@ -52,14 +23,18 @@ def seed(Event):
 
                     power=compute_power(V_LIST,I_LIST)
 
-                    print(f"Power: {power:.2f} W",f"I: {i} ")
+                    window.push(power)
+
                     NUMBER_OF_ROWS_PER_PERIOD=F_S // F_0
                     V_LIST.clear()
                     I_LIST.clear()
+
+                    sleep(0.2)
             
                 V_LIST.append(float(row[4]))
                 I_LIST.append(float(row[2]))
                 NUMBER_OF_ROWS_PER_PERIOD-=1
 
-
+               
+    
 
